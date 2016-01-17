@@ -35,6 +35,7 @@ subject {page}
 		      end
 		end
 	end
+
 	describe "authorization" do
 		describe "visit index" do
 		before {visit users_path}
@@ -65,6 +66,17 @@ subject {page}
 				describe "submitting to the update action" do
 					before { patch user_path(user)}
 					specify {expect(response).to redirect_to(signin_path)}
+				end
+			end
+
+			describe "In Microposts controller" do
+				describe "submitting create action" do
+					before {post microposts_path}
+					specify{expect(response).to redirect_to(signin_path)}
+				end
+				describe "submitting destroy action" do
+					before {delete micropost_path(FactoryGirl.create(:micropost))}
+					specify{expect(response).to redirect_to(signin_path)}
 				end
 			end
 		end

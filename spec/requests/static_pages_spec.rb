@@ -10,6 +10,7 @@ describe "Static pages" do
   it {should have_title(full_title(page_title))}
   end
 
+
   describe "Home page" do
   before {visit root_path}
       
@@ -18,6 +19,22 @@ describe "Static pages" do
 
   it_should_behave_like "all static pages"
   it {should_not have_title('| Home')}
+
+    describe "for signed in users" do
+      let(:user) {FactoryGirl.create(:user)}
+      before do
+        FactoryGirl.create(:micropost, user: user, content:"Lorem ipsum")
+        FactoryGirl.create(:micropost, user: user, content:"Dolor sit amet")
+        sign_in user
+        visit root_path
+      end
+
+      it "should render users feed" do
+        user.feed.each do |item|
+          expect(page).to have_selector("li##{item.id}", text: item.content)
+        end
+      end
+    end
   end
   
   describe "Help page" do
@@ -38,8 +55,6 @@ describe "Static pages" do
 
   describe "Contact" do
   before {visit contact_path}
-  
-
   let(:heading) {'Contact'}
   let(:page_title) {'Contact'}
   it_should_behave_like "all static pages"

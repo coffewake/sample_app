@@ -18,8 +18,43 @@ describe User do
   it { should respond_to(:remember_token) }
   it { should respond_to(:authenticate) }
   it { should respond_to(:admin)}
+  it { should respond_to(:microposts)}
   it {should be_valid}
   it { should_not be_admin}
+
+
+  describe "micropost association" do
+    before {@user.save}
+    let!(:older_micropost) do 
+      FactoryGirl.create(:micropost, user:@user,created_at:1.day.ago)
+    end
+    let!(:newest_micropost) do
+      FactoryGirl.create(:micropost, user:@user, created_at:1.hour.ago)
+    end
+
+    it "shoud have right micropost in right order" do
+      expect(@user.microposts.to_a).to eq [newest_micropost, older_micropost]
+    end
+
+    it "should destroy association microposts" do
+      microposts=@user.microposts.to_a
+      @user.destroy
+      expect(microposts).not_to be_empty
+      microposts.each do |micropost|
+      expect(Micropost.where(id:micropost.id)).to be_empty
+      end
+    end
+    
+    describe "status" do
+      let(:unfollowed_post) do
+        FactoryGirl.create(:micropost, user:FactoryGirl.create(:user))
+      end
+      its (:feed) {should include(older_micropost)}
+      its (:feed) {should include(newest_micropost)}
+      its (:feed) {should_not include(unfollowed_post)}
+    end
+  end 
+
 
   describe "with admin attribute 'true'" do
     before do
